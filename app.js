@@ -3,14 +3,17 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const jwt = require("jsonwebtoken");
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var productosRouter = require('./routes/productos');
 var usuariosRouter = require('./routes/usuarios');
-var loginRouter = require('./routes/login');
+//var loginRouter = require('./routes/login');
+var categoriesRouter = require ('./routes/categories');
 
 var app = express();
+
+app.set("secretKey", "pruebaUTN")
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,15 +26,28 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/productos', productosRouter);
 app.use('/usuarios', usuariosRouter);
-app.use('/login', loginRouter);
+//app.use('/login', loginRouter);
+app.use('/categories', categoriesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
+
+function verifyToken(req,res,next) {
+  jwt.verify(req.headers["x-access-token"],req.app.get("secretKey"),function(error,payload){
+    if(error){
+      res.json({message:error.message})
+    }else{
+      next()
+    }
+  })
+
+}
+
+app.verifyToken = verifyToken
 
 // error handler
 app.use(function(err, req, res, next) {
@@ -41,7 +57,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json(err);
 });
 
 module.exports = app;

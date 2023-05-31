@@ -9,7 +9,7 @@ router.get('/', productosController.getAll);
 router.get('/:id', productosController.getById);
 
 //POST
-router.post('/', productosController.create);
+router.post('/',(req,res,next)=>{req.app.verifyToken(req,res,next)}, productosController.create);
 
 //PUT
 router.put('/:id', productosController.update);
